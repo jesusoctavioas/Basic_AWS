@@ -1,0 +1,30 @@
+---
+- name: Configure Domain Controllers
+  hosts: domain_controllers
+  gather_facts: no
+  vars:
+    ansible_user: Administrator
+    ansible_password: "Alacran Don Julio 200Conejos"
+    ansible_connection: winrm
+    ansible_winrm_transport: ntlm
+    ansible_winrm_scheme: http
+    ansible_winrm_port: 5985
+    domain_name: durango.lab
+    main_dc_ip: 10.0.0.53
+  tasks:
+  - name: Set IP for Main DC DNS server
+    ansible.windows.win_dns_client:
+      adapter_names: '*'
+      dns_servers: "{{ main_dc_ip }}"
+  - name: Promote server as a domain controller
+    win_domain_controller:
+      dns_domain_name: "{{ domain_name }}"
+      domain_admin_user: "ITAdmin@{{ domain_name }}"
+      domain_admin_password: PasswordSuperSecreto$1
+      safe_mode_password: PasswordSuperSecreto$1
+      state: domain_controller
+      read_only: no
+    register: dc_promotion
+  - name: Reboot if server was just promoted to a domain controller
+    win_reboot: {}
+    when: dc_promotion.reboot_required

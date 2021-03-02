@@ -1,0 +1,15 @@
+all:
+  children:
+    main_domain_controller:
+      hosts:   
+        SREDC01:
+          ansible_port: 5985
+          ansible_host: 10.0.0.53   
+    domain_controllers:
+      hosts:
+        SREDC01:
+          ansible_port: 5985
+          ansible_host: 10.0.0.53   
+        SREDC02:
+          ansible_port: 5985
+          ansible_host: 10.0.0.73

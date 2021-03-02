@@ -1,0 +1,53 @@
+Username	cloud_user 
+Password	%7Mdbocgmx 
+URL	https://613885134324.signin.aws.amazon.com/console?region=us-east-1 
+Access Key Id	AKIAY53THYX2CDKBDOEA 
+Secret Access Key	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 
+
+
+#ssh-keygen -y -f .\TheGoodStuff.pem > Public_rsa.pub
+#ssh -i .\TheGoodStuff.pem ec2-user@52.91.139.161
+ssh -i .\TheGoodStuff.pem -N -L 45000:10.0.0.37:3389 ec2-user@54.234.178.210
+ssh -i .\TheGoodStuff.pem -N -L 45001:10.0.0.71:3389 ec2-user@54.234.178.210
+
+<powershell>Rename-Computer -NewName "SRE-DC01" -Restart;</powershell>
+msg {<username> | <sessionname> | <sessionID>| @<filename> | *} [/server:<servername>] [/time:<seconds>] [/v] [/w] [<message>]
+
+Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools;
+Import-Module ADDSDeployment;
+Install-ADDSForest -CreateDnsDelegation:$false -DatabasePath "C:\Windows\NTDS" -DomainMode "WinThreshold" -DomainName "durango.lab" -DomainNetbiosName "DURANGO" -ForestMode "WinThreshold" -InstallDns:$true -LogPath "C:\Windows\NTDS" -NoRebootOnCompletion:$false -SysvolPath "C:\Windows\SYSVOL" -Force:$true;
+Install-ADDSForest -DomainName "durango.lab" -InstallDNS;
+Set-DnsServerForwarder -IPAddress 1.1.1.1 -PassThru;
+
+Add-DnsServerForwarder -IPAddress 8.8.8.8 -PassThru;
+Add-DnsServerForwarder -IPAddress 8.8.4.4 -PassThru;
+
+Install-ADDSDomainController -InstallDns -DomainName "durango.lab" -Credential (Get-Credential @durango.lab);
+--- Este NO ---
+$NewPassword = ConvertTo-SecureString "Alacran Don Julio 200Conejos" -AsPlainText -Force;
+Set-LocalUser -Name Administrator -Password $NewPassword;
+New-LocalUser -Name ITAdmin -AccountNeverExpires -Password $NewPassword; 
+Add-LocalGroupMember -Group Administrators -Member ITAdmin;
+----Este NO ---
+
+$NewPassword = ConvertTo-SecureString "Alacran Don Julio 200Conejos" -AsPlainText -Force;
+New-LocalUser -Name ITAdmin -AccountNeverExpires -Password $NewPassword; 
+Add-LocalGroupMember -Group Administrators -Member ITAdmin;
+Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools;
+Import-Module ADDSDeployment;
+
+$netname = Get-NetConnectionProfile;
+Set-NetConnectionProfile -Name $netname.Name -NetworkCategory Private;
+Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False;    
+winrm quickconfig -quiet;
+
+secpol.msc  para cambiar el nombre de la red
+PasswordSuperSecreto$1
+Outputs:
+
+JumpboxIP = ""
+SRE_DC01-IP = "10.0.0.37"
+SRE_DC01-Password = 
+SRE_DC02-IP = "10.0.0.70"
+SRE_DC02-Password = 
+

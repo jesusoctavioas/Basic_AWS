@@ -1,0 +1,18 @@
+---
+- name: Set Network profile to Private and Disable Win Firewall and configure WinRM
+  hosts: domain_controllers
+  gather_facts: no
+  vars:
+    ansible_user: Administrator
+    ansible_password: "Alacran Don Julio 200Conejos"
+    ansible_connection: winrm
+    ansible_winrm_transport: ntlm
+    ansible_winrm_scheme: http
+    ansible_winrm_port: 5985
+  tasks:
+  - name: Run multi-lined shell commands
+    win_shell: |
+      $netname = get-NetConnectionProfile;
+      Set-NetConnectionProfile -Name $netname.Name -NetworkCategory Private;
+      Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False;    
+      winrm quickconfig -quiet  

@@ -1,0 +1,45 @@
+---
+- name: Configure Main Domain Controller
+  hosts: main_domain_controller
+  gather_facts: no
+  vars:
+    ansible_user: Administrator
+    ansible_password: "Alacran Don Julio 200Conejos"
+    ansible_connection: winrm
+    ansible_winrm_transport: ntlm
+    ansible_winrm_scheme: http
+    ansible_winrm_port: 5985
+    domain_name: durango.lab
+    domain_admin: ConanAdmin
+    domain_admin_password: "PasswordSuperSecreto$1"
+    safe_mode_password: "PasswordSuperSecreto$1"
+  tasks:
+  - name: Ensure domain is created
+    win_domain:
+      dns_domain_name: "{{ domain_name }}"
+      safe_mode_password: "{{ safe_mode_password }}"      
+    register: domain_creation
+  - name: Reboot if domain was just created
+    win_reboot: {}
+    when: domain_creation.reboot_required
+  - name: Ensure domain controllers are promoted
+    win_domain_controller:
+      dns_domain_name: "{{ domain_name }}"
+      domain_admin_user: "{{ domain_admin }}@{{ domain_name }}"
+      domain_admin_password: "{{ domain_admin_password }}"
+      safe_mode_password: "{{ safe_mode_password }}"
+      state: domain_controller
+      install_dns: yes
+      log_path: C:\Windows\Temp\promotion.txt
+    register: dc_promotion
+  - name: Reboot if server was just promoted to a domain controller
+    win_reboot: {}
+    when: dc_promotion.reboot_required
+  - name: Ensure necessary Microsoft features are installed
+    win_feature:
+      name: "{{ item }}"
+      state: present
+    with_items:
+    - AD-Domain-Services
+    - RSAT-AD-AdminCenter
+    - RSAT-ADDS-Tools

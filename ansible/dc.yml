@@ -1,0 +1,18 @@
+---
+- name: Configure domain controllers
+  hosts: domain_controllers
+  gather_facts: no
+  vars:
+    ansible_user: Administrator
+    ansible_password: "Alacran Don Julio 200Conejos"
+    ansible_connection: winrm
+    ansible_winrm_transport: ntlm
+    ansible_winrm_scheme: http
+    ansible_winrm_port: 5985
+  tasks:
+    - name: Display hostname
+      win_command: HOSTNAME.EXE
+      register: hostname_out
+    - name: "Ansible | Print a variable"
+      debug:
+        msg: "The hostname is {{ hostname_out }}"
